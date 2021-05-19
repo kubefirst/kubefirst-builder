@@ -37,7 +37,7 @@ RUN apk --no-cache add \
   zip \
   && rm -rf /var/cache/apk/*
 
-RUN pip3 install awscli --upgrade 
+RUN pip3 install awscli pyyaml --upgrade 
 
 RUN echo $HOME && cd ~ && touch .profile \
   && (curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.1/install.sh | bash) \
