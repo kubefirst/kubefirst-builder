@@ -44,13 +44,13 @@ spec:
     container:
       image:  "{{inputs.parameters.buildImage}}"
       command: [bash, -c]
-      workingDir: "/src"
+      workingDir: "/src/{{inputs.parameters.appName}}"
       args:
         - ls -la;
           until docker ps; do sleep 3; done; 
-          docker build -t "{{inputs.parameters.containerRegistryUrl}}/kubefirst-builder:{{inputs.parameters.ciCommitSha}}" .;
+          docker build -t "{{inputs.parameters.containerRegistryUrl}}/{{inputs.parameters.appName}}:{{inputs.parameters.ciCommitSha}}" .;
           aws ecr get-login-password --region {{inputs.parameters.awsRegion}} | docker login --username AWS --password-stdin {{inputs.parameters.containerRegistryUrl}};
-          docker push "{{inputs.parameters.containerRegistryUrl}}/kubefirst-builder:{{inputs.parameters.ciCommitSha}}";
+          docker push "{{inputs.parameters.containerRegistryUrl}}/{{inputs.parameters.appName}}:{{inputs.parameters.ciCommitSha}}";
       envFrom:
       - secretRef:
           name: ci-secrets
