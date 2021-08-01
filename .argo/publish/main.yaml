@@ -44,7 +44,7 @@ spec:
     container:
       image:  "{{inputs.parameters.buildImage}}"
       command: [bash, -c]
-      workingDir: "/src/{{inputs.parameters.appName}}"
+      workingDir: "/src"
       args:
         - ls -la;
           until docker ps; do sleep 3; done; 
