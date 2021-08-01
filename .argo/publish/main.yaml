@@ -10,8 +10,10 @@ spec:
       value: "{{workflow.parameters.appName}}"
     - name: branch
       value: "{{workflow.parameters.branch}}"
-    # - name: gitRepoUrl
-    #   value: "{{workflow.parameters.gitRepoUrl}}"
+    - name: ciCommitSha
+      value: "{{workflow.parameters.ciCommitSha}}"
+    - name: gitRepoUrl
+      value: "{{workflow.parameters.gitRepoUrl}}"
   templates:
   - name: main
     inputs:
