@@ -1,0 +1,66 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+spec:
+  entrypoint: main
+  arguments:
+    parameters:
+    - name: appDir
+      value: /src/{{workflow.parameters.appName}}
+    - name: appName
+      value: "{{workflow.parameters.appName}}"
+    - name: branch
+      value: "{{workflow.parameters.branch}}"
+    # - name: gitRepoUrl
+    #   value: "{{workflow.parameters.gitRepoUrl}}"
+  templates:
+  - name: main
+    inputs:
+      artifacts:
+      - name: repo-source
+        path: /src
+        git:
+          repo: https://github.com/kubefirst/builder-tmps.git
+          usernameSecret:
+            name: ci-secrets
+            key: github-username
+          passwordSecret:
+            name: ci-secrets
+            key: github-personal-access-token
+      parameters: 
+      - name: appDir
+      - name: appName
+      - name: awsRegion
+        value: "{{workflow.parameters.awsRegion}}"
+        default: us-east-2 
+      - name: buildImage
+        value: "{{workflow.parameters.buildImage}}"
+        default: 555935582951.dkr.ecr.us-east-2.amazonaws.com/kubefirst-builder:0.6-ubuntu
+      - name: ciCommitSha
+      - name: containerRegistryUrl
+        value: "{{workflow.parameters.containerRegistryUrl}}"
+        default: 555935582951.dkr.ecr.us-east-2.amazonaws.com
+    container:
+      image:  "{{inputs.parameters.buildImage}}"
+      command: [bash, -c]
+      workingDir: "/src"
+      args:
+        - ls -la;
+          until docker ps; do sleep 3; done; 
+          docker build -t "{{inputs.parameters.containerRegistryUrl}}/kubefirst-builder:{{inputs.parameters.ciCommitSha}}" .;
+          aws ecr get-login-password --region {{inputs.parameters.awsRegion}} | docker login --username AWS --password-stdin {{inputs.parameters.containerRegistryUrl}};
+          docker push "{{inputs.parameters.containerRegistryUrl}}/kubefirst-builder:{{inputs.parameters.ciCommitSha}}";
+      envFrom:
+      - secretRef:
+          name: ci-secrets
+      env:
+      - name: DOCKER_HOST
+        value: "tcp://localhost:2375"
+    sidecars:
+    - name: dind
+      image: docker:19.03.13-dind
+      env:
+        - name: DOCKER_TLS_CERTDIR
+          value: ""
+      securityContext:
+        privileged: true
+      mirrorVolumeMounts: true

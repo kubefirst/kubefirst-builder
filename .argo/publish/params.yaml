@@ -1,0 +1,3 @@
+appName: kubefirst-builder
+branch: main
+gitRepoUrl: https://github.com/kubefirst/builder-tmps.git
