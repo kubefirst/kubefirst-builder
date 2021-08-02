@@ -22,7 +22,7 @@ spec:
         path: /src
         git:
           repo: "{{workflow.parameters.gitRepoUrl}}"
-          branch: "{{workflow.parameters.branch}}"
+          revision: "{{workflow.parameters.branch}}"
           usernameSecret:
             name: ci-secrets
             key: github-username
