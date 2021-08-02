@@ -9,7 +9,7 @@ spec:
     - name: appName
       value: "{{workflow.parameters.appName}}"
     - name: branch
-      value: "{{workflow.parameters.branch}}"
+      value: adopt-argo-and-gh # "{{workflow.parameters.branch}}"
     - name: ciCommitSha
       value: "{{workflow.parameters.ciCommitSha}}"
     - name: gitRepoUrl
@@ -22,7 +22,7 @@ spec:
         path: /src
         git:
           repo: "{{workflow.parameters.gitRepoUrl}}"
-          branch: adopt-argo-and-gh
+          branch: "{{workflow.parameters.branch}}"
           usernameSecret:
             name: ci-secrets
             key: github-username
