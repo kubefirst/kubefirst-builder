@@ -9,7 +9,7 @@ spec:
     - name: appName
       value: "{{workflow.parameters.appName}}"
     - name: branch
-      value: adopt-argo-and-gh # "{{workflow.parameters.branch}}"
+      value: "{{workflow.parameters.branch}}" 
     - name: ciCommitSha
       value: "{{workflow.parameters.ciCommitSha}}"
     - name: gitRepoUrl
@@ -47,13 +47,8 @@ spec:
       command: [bash, -c]
       workingDir: "/src"
       args:
-        - ls -la;
-          until docker ps; do sleep 3; done; 
-          echo "why not working";
-          echo "{{inputs.parameters.containerRegistryUrl}}/{{inputs.parameters.appName}}:{{inputs.parameters.ciCommitSha}}";
-          echo "why not working";
+        - until docker ps; do sleep 3; done; 
           docker build -t "{{inputs.parameters.containerRegistryUrl}}/{{inputs.parameters.appName}}:{{inputs.parameters.ciCommitSha}}" .;
-          docker image ls;
           aws ecr get-login-password --region {{inputs.parameters.awsRegion}} | docker login --username AWS --password-stdin "{{inputs.parameters.containerRegistryUrl}}";
           docker push "{{inputs.parameters.containerRegistryUrl}}/{{inputs.parameters.appName}}:{{inputs.parameters.ciCommitSha}}";
       envFrom:
@@ -71,3 +66,56 @@ spec:
       securityContext:
         privileged: true
       mirrorVolumeMounts: true
+
+    - - name: get-initial-chart-version
+        templateRef:
+          name: cwft-helm
+          template: helm-get-chart-version
+          clusterScope: true
+        arguments:
+          artifacts:
+          - name: repo-source
+            from: "{{steps.checkout.outputs.artifacts.repo-source}}"
+          parameters:
+          - name: appDir
+            value: "{{workflow.parameters.appDir}}"
+          - name: chartDir
+            value: "{{workflow.parameters.chartDir}}"
+
+    - - name: set-chart-versions
+        templateRef:
+          name: cwft-helm
+          template: helm-set-chart-versions
+          clusterScope: true
+        arguments:
+          artifacts:
+            - name: repo-source
+              from: "{{steps.checkout.outputs.artifacts.repo-source}}"
+          parameters:
+          - name: appDir
+            value: "{{workflow.parameters.appDir}}"
+          - name: chartDir
+            value: "{{workflow.parameters.chartDir}}"
+          - name: chartVersion
+            value: "{{steps.get-initial-chart-version.outputs.result}}-rc+{{workflow.parameters.shortSha}}"
+          - name: ciCommitSha
+            value: "{{workflow.parameters.ciCommitSha}}"
+
+    - - name: publish-helm-chart
+        templateRef:
+          name: cwft-helm
+          template: helm-publish-chart
+          clusterScope: true
+        arguments:
+          artifacts:
+          - name: repo-source
+            from: "{{steps.set-chart-versions.outputs.artifacts.repo-source}}"
+          parameters:
+          - name: appDir
+            value: "{{workflow.parameters.appDir}}"
+          - name: chartDir
+            value: "{{workflow.parameters.chartDir}}"
+
+# todo 
+1. move template to cwft
+2. get next cwft from metaphor
