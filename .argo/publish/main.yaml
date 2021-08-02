@@ -22,6 +22,7 @@ spec:
         path: /src
         git:
           repo: "{{workflow.parameters.gitRepoUrl}}"
+          branch: adopt-argo-and-gh
           usernameSecret:
             name: ci-secrets
             key: github-username
