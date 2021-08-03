@@ -24,6 +24,6 @@ jobs:
           AWS_SESSION_NAME: ${{ secrets.AWS_SESSION_NAME }}
           ARGO_SERVER_URL: ${{ secrets.ARGO_SERVER_URL }}
         with:
-          workflow_yaml_path: ".argo/publish/main.yaml"
+          workflow_yaml_path: ".argo/publish/builder.yaml"
           parameter_file_path: ".argo/publish/params.yaml"
         # todo look into outputs

@@ -1,0 +1,78 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+spec:
+  entrypoint: main
+  arguments:
+    parameters:
+    - name: appDir
+      value: /src/{{workflow.parameters.appName}}
+    - name: appName
+    - name: branch
+    - name: ciCommitSha
+    - name: gitRepoUrl
+  templates:
+  - name: main
+    steps:
+    - - name: checkout
+        templateRef:
+          name: cwft-git
+          template: git-checkout-with-gitops
+          clusterScope: true
+        arguments:
+          parameters:
+          - name: appDir
+            value: "{{workflow.parameters.appDir}}"
+          - name: branch
+            value: "{{workflow.parameters.branch}}"
+          - name: gitRepoUrl
+            value: "{{workflow.parameters.gitRepoUrl}}"
+
+    - - name: next-image-version
+        templateRef:
+          name: cwft-ci
+          template: get-next-version
+          clusterScope: true
+        arguments:
+          artifacts:
+          - name: repo-source
+            from: "{{steps.checkout.outputs.artifacts.repo-source}}"
+          parameters:
+          - name: appDir
+            value: "{{workflow.parameters.appDir}}"
+
+    - - name: git-bump-commit
+        templateRef:
+          name: cwft-git-v2
+          template: git-bump-commit
+          clusterScope: true
+        arguments:
+          artifacts:
+          - name: repo-source
+            from: "{{steps.checkout.outputs.artifacts.repo-source}}"
+          parameters:
+          - name: appDir
+            value: "{{workflow.parameters.appDir}}"
+          - name: commitMessage
+            value: "[ci skip] bumping {{workflow.parameters.appName}} to image version: {{steps.next-image-version.outputs.result}}"
+          - name: repoPath
+            value: github.com/kubefirst/{{workflow.parameters.appName}}
+          - name: nextVersion
+            value: "{{steps.next-image-version.outputs.result}}"
+
+    - - name: publish-container
+        templateRef:
+          name: cwft-docker-v2
+          template: docker-build
+          clusterScope: true
+        arguments:
+          artifacts:
+          - name: repo-source
+            from: "{{steps.checkout.outputs.artifacts.repo-source}}"
+          parameters:
+          - name: appDir
+            value: "{{workflow.parameters.appDir}}"
+          - name: appName
+            value: "{{workflow.parameters.appName}}"
+          #* note: for our builder images we leverage a tag for convenience 
+          - name: ciCommitSha
+            value: "{{steps.next-image-version.outputs.result}}" 
