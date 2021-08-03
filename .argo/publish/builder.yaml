@@ -26,6 +26,10 @@ spec:
             value: "{{workflow.parameters.branch}}"
           - name: gitRepoUrl
             value: "{{workflow.parameters.gitRepoUrl}}"
+          - name: username
+            value: "github-username"
+          - name: personalAccessToken
+            value: "github-personal-access-token"
 
     - - name: next-image-version
         templateRef:
