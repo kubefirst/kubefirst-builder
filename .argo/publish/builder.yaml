@@ -16,7 +16,7 @@ spec:
     - - name: checkout
         templateRef:
           name: cwft-git
-          template: git-checkout-with-gitops
+          template: git-checkout-github
           clusterScope: true
         arguments:
           parameters:
@@ -26,10 +26,6 @@ spec:
             value: "{{workflow.parameters.branch}}"
           - name: gitRepoUrl
             value: "{{workflow.parameters.gitRepoUrl}}"
-          - name: username
-            value: "github-username"
-          - name: personalAccessToken
-            value: "github-personal-access-token"
 
     - - name: next-image-version
         templateRef:
