@@ -42,7 +42,7 @@ spec:
 
     - - name: git-bump-commit
         templateRef:
-          name: cwft-git-v2
+          name: cwft-git
           template: git-bump-commit
           clusterScope: true
         arguments:
@@ -61,7 +61,7 @@ spec:
 
     - - name: publish-container
         templateRef:
-          name: cwft-docker-v2
+          name: cwft-docker
           template: docker-build
           clusterScope: true
         arguments:
