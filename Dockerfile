@@ -37,7 +37,7 @@ RUN apk --no-cache add \
   zip \
   && rm -rf /var/cache/apk/*
 
-RUN pip3 install awscli pyyaml --upgrade 
+RUN pip3 install awscli --upgrade 
 
 RUN echo $HOME && cd ~ && touch .profile \
   && (curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.1/install.sh | bash) \
@@ -62,11 +62,18 @@ ADD https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v
 ADD https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/amd64/aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
 RUN chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator
 
+# install hashicorp vault
+ENV VAULT_VERSION 1.6.2
+RUN curl -LO https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip \
+  && unzip vault_${VAULT_VERSION}_linux_amd64.zip \
+  && chmod +x vault \
+  && mv vault /usr/local/bin/vault \
+  && rm -f vault_${VAULT_VERSION}_linux_amd64.zip
+
+
 # DESIRED_VERSION is the helm version to install
 ENV DESIRED_VERSION v3.5.0
 
 RUN mkdir -p $HOME/.helm && export HELM_HOME="$HOME/.helm" && curl -L https://git.io/get_helm.sh | /bin/bash
-
-ADD scripts /scripts/
 
 CMD [ "/bin/bash" ]
