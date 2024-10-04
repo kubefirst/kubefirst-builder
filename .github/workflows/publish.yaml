@@ -1,0 +1,31 @@
+name: Build image
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push-alpine-helm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+        with: 
+          fetch-depth: 0
+      
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: "ghcr.io"
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push alpine-helm image
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          context: alpine-helm/
+          tags: alpine-helm:v3.16.1
